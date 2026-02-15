@@ -1,0 +1,32 @@
+from .token import Token
+from .token_types import TokenType
+from .keywords import KEYWORDS
+
+
+class Lexer:
+    def __init__(self, source_code) -> None:
+        self.source = source_code
+        self.pos = 0
+        self.line = 1
+        self.column = 1
+        self.current_char = source_code[0] if source_code else None
+
+    """Move to the next character"""
+
+    def advance(self):
+        if self.current_char == "\n":
+            self.line += 1
+            self.column = 1
+        else:
+            self.column += 1
+
+        self.pos += 1
+        self.current_char = (
+            self.source[self.pos] if self.pos < len(self.source) else None
+        )
+
+    """Look at the next character without advancing the lexer status"""
+
+    def peek(self, offset=1):
+        peek_pos = self.pos + offset
+        return self.source[peek_pos] if peek_pos < len(self.source) else None
