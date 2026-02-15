@@ -7,6 +7,7 @@ class TokenType(Enum):
     INT = auto()
     FLOAT = auto()
     CHAR = auto()
+    VOID = auto()
     IF = auto()
     ELSE = auto()
     WHILE = auto()
