@@ -1,7 +1,6 @@
 from .token import Token
 from .token_types import TokenType
 from .keywords import KEYWORDS
-from ..error.lexical import LexicalError
 
 
 class Lexer:
@@ -11,7 +10,6 @@ class Lexer:
         self.line = 1
         self.column = 1
         self.current_char = source_code[0] if source_code else None
-        self.errors = []
 
     """Move to the next character"""
 
@@ -40,25 +38,25 @@ class Lexer:
         peek_pos = self.pos + offset
         return self.source[peek_pos] if peek_pos < len(self.source) else None
 
-    """Skip single-line and multi-line comments"""
+    """Skip both single-line and multi-line comments"""
 
     def skip_comment(self):
         if self.current_char == "/" and self.peek() == "/":
             while self.current_char is not None and self.current_char != "\n":
                 self.advance()
+            if self.current_char == "\n":
+                self.advance()  # Skip the newline character after the comment
         elif self.current_char == "/" and self.peek() == "*":
             self.advance()  # Skip '/'
             self.advance()  # Skip '*'
             while True:
                 if self.current_char is None:
-                    self.errors.append(
-                        LexicalError(
-                            "Unterminated multi-line comment", self.line, self.column
-                        )
+                    raise Exception(
+                        f"Unterminated comment at line {self.line}, column {self.column}"
                     )
                 if self.current_char == "*" and self.peek() == "/":
                     self.advance()  # Skip '*'
                     self.advance()  # Skip '/'
+                    self.advance()  # Move past the end of the comment
                     break
-                else:
-                    self.advance()
+                self.advance()
