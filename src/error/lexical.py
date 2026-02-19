@@ -1,8 +1,6 @@
-class LexicalError:
-    def __init__(self, message, line, column):
-        self.message = message
-        self.line = line
-        self.column = column
+from src.error.base import BaseError
 
-    def __str__(self):
-        return f"LexicalError: {self.message} at line {self.line}, column {self.column}"
+
+class LexicalError(BaseError):
+    def __init__(self, message, line, column):
+        super().__init__(message, column, line)
