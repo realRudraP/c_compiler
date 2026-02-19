@@ -1,8 +1,10 @@
 from .token import Token
 from .token_types import TokenType
-from .keywords import KEYWORDS
+from .keywords import KEYWORDS, is_keyword
 from src.error.syntactical import SyntacticalError
 from src.error.lexical import LexicalError
+
+from src.lexer import keywords
 
 
 class Lexer:
@@ -107,6 +109,32 @@ class Lexer:
             number_str,
             self.line,
             number_column_position,
+        )
+
+    def read_identifier(self) -> Token:
+        identifier_str = ""
+        identifier_column_position = self.column
+        if self.current_char is not None and self.current_char.isdigit():
+            self.collected_errors.append(
+                LexicalError(
+                    "Identifiers cannot start with a digit",
+                    self.line,
+                    identifier_column_position,
+                )
+            )
+        while self.current_char is not None and (
+            self.current_char.isalnum() or self.current_char == "_"
+        ):
+            identifier_str += self.current_char
+            self.advance()
+
+        if (token_type := keywords.get_keyword_token_type(identifier_str)) is not None:
+            return Token(
+                token_type, identifier_str, self.line, identifier_column_position
+            )
+
+        return Token(
+            TokenType.IDENTIFIER, identifier_str, self.line, identifier_column_position
         )
 
     # Skip sections of source code

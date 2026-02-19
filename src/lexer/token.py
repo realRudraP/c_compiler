@@ -14,3 +14,13 @@ class Token:
 
     def __str__(self):
         return f"{self.type.name}({self.value})"
+
+    def __eq__(self, other):
+        if not isinstance(other, Token):
+            return NotImplemented
+        return (
+            self.type == other.type
+            and self.value == other.value
+            and self.line == other.line
+            and self.column == other.column
+        )
