@@ -137,6 +137,111 @@ class Lexer:
             TokenType.IDENTIFIER, identifier_str, self.line, identifier_column_position
         )
 
+    def read_string_literal(self) -> Token:
+        string_literal = ""
+        string_literal_column_position = self.column
+        self.advance()  # Skip the opening quote
+        while self.current_char is not None and self.current_char != '"':
+            if self.current_char == "\n":
+                self.collected_errors.append(
+                    LexicalError(
+                        "Unterminated string literal: newline encountered before closing '\"'",
+                        self.line,
+                        self.column,
+                    )
+                )
+                break
+            if (
+                self.current_char == "\\"  # Used to handle escape sequences
+            ):
+                if self.peek() is None:
+                    self.collected_errors.append(
+                        LexicalError(
+                            "Unterminated string literal: backslash at end of file",
+                            self.line,
+                            self.column,
+                        )
+                    )
+                    break
+                self.advance()
+                if self.current_char in ['"', "\\", "n", "t", "r"]:
+                    escape_sequences = {
+                        '"': '"',
+                        "\\": "\\",
+                        "n": "\n",
+                        "t": "\t",
+                        "r": "\r",
+                    }
+                    string_literal += escape_sequences[self.current_char]
+                else:
+                    self.collected_errors.append(
+                        LexicalError(
+                            f"Invalid escape sequence: '\\{self.current_char}' is not a valid escape character",
+                            self.line,
+                            self.column,
+                        )
+                    )
+                    string_literal += (
+                        self.current_char
+                    )  # add the operator so we can continue parsing the string
+            else:
+                string_literal += self.current_char
+            self.advance()
+        if self.current_char == '"':
+            self.advance()  # Skip the closing quote
+        else:
+            self.collected_errors.append(
+                LexicalError(
+                    "Unterminated string literal: reached end of source without closing '\"'",
+                    self.line,
+                    self.column,
+                )
+            )
+        return Token(
+            TokenType.STRING_LITERAL,
+            string_literal,
+            self.line,
+            string_literal_column_position,
+        )
+
+    def read_special_symbol(self) -> Token:
+        special_symbol_str = ""
+        special_symbol_column_position = self.column
+        SPECIAL_SYMBOLS = {'+':TokenType.PLUS, '-':TokenType.MINUS, '*':TokenType.MULTIPLY, '/':TokenType.DIVIDE,'(':TokenType.LEFT_PARAN,')':TokenType.RIGHT_PARAN,'{':TokenType.LEFT_BRACE,'}':TokenType.RIGHT_BRACE,'[':TokenType.LEFT_BRACKET,']':TokenType.RIGHT_BRACKET,';':TokenType.SEMICOLON,',':TokenType.COMMA, '=':TokenType.EQUAL, '!':TokenType.LOGICAL_NOT, '<':TokenType.LESS_THAN, '>':TokenType.GREATER_THAN, '&': TokenType.AMPERSAND, '|': TokenType.BITWISE_OR}
+        MULTI_CHAR_SYMBOLS = {'==': TokenType.EQUAL_EQUAL, '!=': TokenType.NOT_EQUAL, '<=': TokenType.LESS_EQUAL, '>=': TokenType.GREATER_EQUAL, '&&': TokenType.LOGICAL_AND, '||': TokenType.LOGICAL_OR}
+        while self.current_char is not None and self.current_char in SPECIAL_SYMBOLS.keys():
+            special_symbol_str += self.current_char
+            next_char = self.peek()
+            if next_char in SPECIAL_SYMBOLS.keys():
+                self.advance()
+                special_symbol_str += self.current_char
+            self.advance()
+        if special_symbol_str in MULTI_CHAR_SYMBOLS:
+            return Token(
+                MULTI_CHAR_SYMBOLS[special_symbol_str],
+                special_symbol_str,
+                self.line,
+                special_symbol_column_position,
+            )
+        elif special_symbol_str in SPECIAL_SYMBOLS:
+            return Token(
+                SPECIAL_SYMBOLS[special_symbol_str],
+                special_symbol_str,
+                self.line,
+                special_symbol_column_position,
+            )
+        else:
+            self.collected_errors.append(
+                LexicalError(
+                    f"Invalid special symbol: '{special_symbol_str}' is not a valid special symbol",
+                    self.line,
+                    special_symbol_column_position,
+                )
+            )
+            return Token(
+                TokenType.EOF, special_symbol_str, self.line, special_symbol_column_position
+            )
+
     # Skip sections of source code
 
     """Skip both single-line and multi-line comments"""

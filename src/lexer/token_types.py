@@ -32,13 +32,16 @@ class TokenType(Enum):
     ASSIGN = auto()
     EQUAL = auto()
     NOT_EQUAL = auto()
+    EQUAL_EQUAL = auto()
     LESS_THAN = auto()
+    AMPERSAND = auto()
     GREATER_THAN = auto()
     LESS_EQUAL = auto()
     GREATER_EQUAL = auto()
     LOGICAL_AND = auto()
     LOGICAL_OR = auto()
     LOGICAL_NOT = auto()
+    BITWISE_OR = auto()
 
     # Symbols and delimiters
     SEMICOLON = auto()
