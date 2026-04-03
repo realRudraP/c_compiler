@@ -10,6 +10,7 @@ KEYWORDS = {
     'while': TokenType.WHILE,
     'for': TokenType.FOR,
     'return': TokenType.RETURN,
+    'do': TokenType.DO,
 }
 
 def is_keyword(word):
